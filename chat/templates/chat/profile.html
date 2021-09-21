@@ -19,7 +19,17 @@
             </form>
         </div>
         <div class="media">
+            <h1>Message</h1>
+            <form id="post-form" method="POST" action="privatecheckview">
+                {% csrf_token %}
+                <label>💬</label>
+                <input type="text" name="room_name" id="room_name" width="100px" />
+                <input type="submit" value="Chat">
+            </form>
+        </div>
+        <div class="media">
             <h1>Your Profile</h1>
+            <img class="rounded-circle account-img" src="{{ user.Profile.image.url }}" style="max-width: 200px; max-height: 200px;">
             <div class="media-body">
                 <h2 class="account-heading">{{ user.username }}</h2>
                 <p class="text-secondary">{{ user.email }}</p>
@@ -30,6 +40,7 @@
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">Update details</legend>
                 {{ u_update|crispy }}
+                {{ p_update|crispy }}
             </fieldset>
             <div class="form-group">
                 <button class="btn btn-outline-info" type="submit">Update</button>

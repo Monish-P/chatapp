@@ -18,6 +18,11 @@ from django.urls import path,include
 from authentication import views as aviews
 from django.contrib.auth import views as auth_views
 from chat import views as cviews
+from django.conf.urls import url
+from django.conf import settings
+from django.conf.urls.static import static
+from django.views.static import serve
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',aviews.starting,name='starting'),
@@ -29,10 +34,21 @@ urlpatterns = [
     path('search',cviews.search_users,name='search'),
     path('publicroom/',cviews.home,name='home'),
     path('<str:room>/',cviews.room,name='room'),
+    path('privatechat/<str:room>/<str:chattinguser>/',cviews.privateroom,name='privateroom'),
+    path('deletemessages/<int:roomid>/',cviews.MessageListView.as_view(template_name='chat/message_list.html'),name='deletemessages'),
+    path('deletemessages/<int:roomid>/<int:pk>/',cviews.MessageDeleteView.as_view(template_name='chat/message_delete.html'),name='messagedelete'),
+     path('privatecheckview',cviews.privatecheckview,name='privatecheckview'),
     path('publicroom/checkview',cviews.checkview,name='checkview'),
     path('send',cviews.send,name='send'),
     path('getMessages/<str:room>/',cviews.getMessages,name='getMessages'),
+    url(r'^media/(?P<path>.*)$', serve,{'document_root':  settings.MEDIA_ROOT}), 
+    url(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
 ]
+if settings.DEBUG :
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 urlpatterns += [
     path('captcha/',include('captcha.urls')),
 ]
+
+# style='float: right;'
