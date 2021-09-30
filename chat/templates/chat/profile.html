@@ -9,6 +9,14 @@
 </head>
 <body>
     <div class="content-section">
+        <div class="media" style='border:1px solid black; height:fit-content; width:fit-content'>
+            <h1>My Notifications</h1>
+            {% for noti in notifications %}
+                {% if noti.user != user.username %}
+                    <h3 style='border:2px solid red;'>You have new message(s) from <a style='color:blue;'>{{ noti.user }}</a></h3>
+                {% endif %}
+            {% endfor %}
+        </div>
         <div class="media">
             <h1>Search</h1>
             <form id="post-form" method="POST" action="search">
@@ -25,6 +33,16 @@
                 <label>💬</label>
                 <input type="text" name="room_name" id="room_name" width="100px" />
                 <input type="submit" value="Chat">
+            </form>
+        </div>
+        <div class="media">
+            <h1>My Groups</h1>
+            <a style="text-decoration-line: none; border: 2px solid black; width: 300px; height: 300px; padding: 10px; margin: 500px;" href="{% url 'creategroup' %}">Create New Group</a>
+            <form id="post-form" method="POST" action="check_group">
+                {% csrf_token %}
+                <label>Enter Group 👨‍👩‍👧</label>
+                <input type="text" name="check_group" id="check_group" width="100px" />
+                <input type="submit" value="Enter">
             </form>
         </div>
         <div class="media">

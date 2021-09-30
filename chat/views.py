@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from chat.models import Room, Message
+from chat.models import Room, Message,Group,Notification
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -10,6 +10,7 @@ from django.views.generic import ListView,DeleteView
 from django.urls import reverse
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.dispatch import receiver
+
 # Create your views here.
 def home(request):
     return render(request, 'chat/home.html')
@@ -27,9 +28,12 @@ def profile(request):
     else:
         u_update=UserUpdateForm(instance=request.user)
         p_update=ProfileUpdateForm(instance=request.user.Profile)
+    
     context={
         'u_update':u_update,
         'p_update':p_update,
+        'notifications':Notification.objects.all(),
+        'group':Group.objects.all(),
     }
     return render(request,'chat/profile.html',context)
 
@@ -70,6 +74,8 @@ def privateroom(request, room, chattinguser):
     username = request.user.username
     room_details = Room.objects.get(name=room)
     other_user = User.objects.get(username=chattinguser)
+    if Notification.objects.all().filter(user=chattinguser).exists():
+        Notification.objects.get(user=chattinguser).delete()
     return render(request, 'chat/private_chat.html', {
         'username': username,
         'room': room,
@@ -133,4 +139,49 @@ def got_online(sender, user, request, **kwargs):
 def got_offline(sender, user, request, **kwargs):   
     user.Profile.is_online = False
     user.Profile.save()
+
+
+def create_group(request):
+    return render(request,'chat/group_name.html')
+
+def group_name(request):
+    gname = request.POST['group_name']
+    g = Group.objects.create(name=gname,user=request.user.username)
+    g.save()
+    return render(request,'chat/add_users.html',{'gname':gname})
+def add_users(request):
+    usser = request.POST['add_user']
+    gname = request.POST['gname']
+    if User.objects.filter(username=usser).exists():
+        g = Group.objects.create(name=gname,user=usser)
+        g.save()
+        messages.success(request,'User added successfully')
+    else:
+        messages.error(request,'The user does not exist')
+    return render(request,'chat/add_users.html',{'gname':gname})
+def group(request,group):
+    username = request.user.username
+    if Room.objects.filter(name=group).exists():
+        room_details = Room.objects.get(name=group)
+    else:
+        r = Room.objects.create(name=group)
+        r.save()
+        room_details = Room.objects.get(name=group)
+    if Notification.objects.all().filter(user=group).exists():
+        Notification.objects.get(user=group).delete()
+    return render(request, 'chat/group.html', {
+        'username': username,
+        'room': group,
+        'room_details': room_details,
+    })
+def check_group(request):
+    gname = request.POST['check_group']
+    if Group.objects.filter(name=gname,user=request.user.username).exists():
+        return redirect('group/'+gname)
+    else:
+        return HttpResponse('You are not a member of mentioned group or the group may not exist')
+
+def exit_group(request,gname):
+    Group.objects.get(name=gname,user=request.user.username).delete()
+    return redirect('profile')
 

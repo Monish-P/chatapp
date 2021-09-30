@@ -18,3 +18,14 @@ class Profile(models.Model):
     is_online = models.BooleanField(default=False)
     def __str__(self):
         return self.user.username + 'Profile'
+
+class Notification(models.Model):
+    user = models.CharField(max_length=1000000)
+
+    def __str__(self):
+        return 'Message from '+self.user
+
+class Group(models.Model):
+
+    name = models.CharField(max_length=1000000)
+    user = models.CharField(max_length=1000000)
